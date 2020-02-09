@@ -1,19 +1,16 @@
 /**
- * My sensors Network
+ * My devices Network
  */
 
 namespace dev.thiagofontes
 
-/**
- * My sensors Network
- */
 participant User identified by userId{
   o String userId
   o String userName
 }
 
-asset Sensor identified by sensorId {
-  o String sensorId
+asset Device identified by deviceId {
+  o String deviceId
   o String model
   o String encryptionKey
   --> User owner
@@ -21,11 +18,16 @@ asset Sensor identified by sensorId {
 }
 
 transaction givePermission {
-  --> Sensor sensor
-  --> User user
+  --> Device device
+  --> User addedUser
+}
+
+transaction revokePermission {
+  --> Device device
+  --> User removedUser
 }
 
 transaction changeOwner {
-  --> Sensor sensor
+  --> Device device
   --> User newOwner
 }

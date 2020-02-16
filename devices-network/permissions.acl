@@ -15,27 +15,21 @@
 /**
  * Sample access control list.
  */
-rule EverybodyCanReadEverything {
-    description: "Allow all participants read access to all resources"
-    participant: "dev.thiagofontes.SampleParticipant"
-    operation: READ
-    resource: "dev.thiagofontes.*"
-    action: ALLOW
-}
 
-rule EverybodyCanSubmitTransactions {
-    description: "Allow all participants to submit transactions"
-    participant: "dev.thiagofontes.SampleParticipant"
-    operation: CREATE
-    resource: "dev.thiagofontes.SampleTransaction"
-    action: ALLOW
+rule R1 {
+    description: "Users that aren't on users list of the Device can't read Device info"
+    participant(u): "dev.thiagofontes.User"
+    operation: ALL
+    resource(d): "dev.thiagofontes.Device"
+    condition: (!d.users.includes(u))
+    action: DENY
 }
 
 rule OwnerHasFullAccessToTheirAssets {
-    description: "Allow all participants full access to their assets"
-    participant(p): "dev.thiagofontes.SampleParticipant"
+    description: "Allow all participants full access to their devices"
+    participant(p): "dev.thiagofontes.User"
     operation: ALL
-    resource(r): "dev.thiagofontes.SampleAsset"
+    resource(r): "dev.thiagofontes.Device"
     condition: (r.owner.getIdentifier() === p.getIdentifier())
     action: ALLOW
 }

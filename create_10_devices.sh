@@ -1,7 +1,7 @@
 #!/bin/bash
 counter=0
 
-while [ $counter -lt 50 ]
+while [ $counter -lt 10 ]
 do
     counter=$((counter + 1))
     printf "iotDevice"$counter";"
@@ -11,6 +11,6 @@ do
         "model": "12341",
         "encryptionKey": "'$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 16)'",
         "owner": "resource:dev.thiagofontes.User#u1",
-        "users": ["resource:dev.thiagofontes.User#u1"]
+        "users": ["resource:dev.thiagofontes.User#u'$counter'"]
         }' -w "%{time_starttransfer}\n" -s -o /dev/null
 done

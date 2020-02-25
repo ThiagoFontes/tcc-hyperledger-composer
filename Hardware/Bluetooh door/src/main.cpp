@@ -8,7 +8,7 @@
 //http://www.lucadentella.it/en/2017/02/10/esp32-10-generatore-numeri-random/
 #define DR_REG_RNG_BASE 0x3ff75144
 
-
+// Function that generates a random string given a lenght
 std::string get_random_string( size_t length )
 {
     auto randchar = []() -> char
@@ -26,6 +26,7 @@ std::string get_random_string( size_t length )
     return str;
 }
 
+// Function that encrypt a string message
 std::string encrypt_message(std::string random_message) {
   mbedtls_aes_context aes;
 
@@ -35,12 +36,9 @@ std::string encrypt_message(std::string random_message) {
   strcpy(key, key_string.c_str());
 
   char input[random_message.size()+1];
-  // std::string random_message = "Vamu ver se isso worka";
-  // char input[TXT_VALID_LENGTH];
   strcpy(input, random_message.c_str());
 
   unsigned char iv[IV_SIZE] = {0};
-
   unsigned char output[INPUT_SIZE] = {0};
 
   mbedtls_aes_init( &aes );
@@ -62,9 +60,6 @@ std::string encrypt_message(std::string random_message) {
   Serial.printf("Message: %s\n", input);
 
   std::string output_string((char*)output);
-  // for(int i = 0; i < strlen((const char*) output); i++) {
-  //   output_string = output_string + (char)output[i];
-  // }
 
   return output_string;
 }

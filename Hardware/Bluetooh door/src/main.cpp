@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "mbedtls/aes.h"
+#include "BluetoothSerial.h"
 
 #define IV_SIZE     16
 #define INPUT_SIZE  256
@@ -9,6 +10,12 @@
 #define DR_REG_RNG_BASE 0x3ff75144
 
 const std::string key_string = "4To4jyTAOMvf99fx";
+
+// Bluetooth Object
+BluetoothSerial ESP_BT;
+int incoming;
+int bt_message_size;
+char bt_message[256];
 
 // Function that generates a random string given a lenght
 std::string get_random_string( size_t length )
@@ -97,8 +104,17 @@ void print_as_hex(std::string encrypeted_string) {
   Serial.println();
 }
 
+void send_bt_string(std::string message) {
+  char char_array[message.size()+1];
+  strcpy(char_array, message.c_str());
+  ESP_BT.println(char_array);
+}
+
+
 void setup() {
   Serial.begin(115200);
+
+  //Encryption test
   print_string("Key", key_string);
   std::string random_string = get_random_string(32);
   print_string("Random String", random_string);
@@ -106,8 +122,36 @@ void setup() {
   print_as_hex(encrypeted_string);
   std::string decrypted_string = decrypt(encrypeted_string);
   print_string("Decrypted String", decrypted_string);
+
+  //Initializing Bluetooth
+  ESP_BT.begin("ESP32_Door_Control");
+  Serial.println("Bluetooth Device is Ready to Pair");
+  pinMode (LED_BUILTIN, OUTPUT);
+
+  bt_message_size = 0;
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  //Check if we receive anything from Bluetooth
+  if (ESP_BT.available()) {
+    incoming = ESP_BT.read(); //Read what we recevive
+      // Serial.print("Received:");
+    if(incoming != '\n' && incoming != '\r'){
+      // Serial.printf("%c", incoming);
+      if(bt_message_size < 256){
+        bt_message[bt_message_size] = incoming;
+        bt_message_size += 1;
+      }
+    } else if(incoming == '\n'){
+      bt_message[bt_message_size] = '\0';
+      bt_message_size = 0;
+      Serial.println(bt_message);
+      std::string random_string = get_random_string(32);
+      print_string("Random String", random_string);
+      std::string encrypeted_string = encrypt(random_string);
+      print_string("encrypeted String", encrypeted_string);
+      print_as_hex(encrypeted_string);
+      send_bt_string(encrypeted_string);
+    }
+  }
 }

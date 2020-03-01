@@ -4,7 +4,7 @@
 
 #define IV_SIZE     16
 #define INPUT_SIZE  256
-
+#define LED_BUILTIN 2
 // Random Number peripheral included on ESP32
 //http://www.lucadentella.it/en/2017/02/10/esp32-10-generatore-numeri-random/
 #define DR_REG_RNG_BASE 0x3ff75144
@@ -16,6 +16,9 @@ BluetoothSerial ESP_BT;
 int incoming;
 int bt_message_size;
 char bt_message[256];
+
+int misses;
+std::string random_string;
 
 // Function that generates a random string given a lenght
 std::string get_random_string( size_t length )
@@ -111,6 +114,18 @@ void send_bt_string(std::string message) {
 }
 
 
+void alarm() {
+  Serial.println("ALARM GOES OFF");
+  Serial.println("WEEEE WOOOO WEEEE WOOOOO");
+  for(int i = 0; i < 10; i++) {
+    digitalWrite(LED_BUILTIN, LOW);
+    delay(1000);
+    digitalWrite(LED_BUILTIN, HIGH);
+    delay(1000);
+  }
+  digitalWrite(LED_BUILTIN, LOW);
+}
+
 void setup() {
   Serial.begin(115200);
 
@@ -129,6 +144,7 @@ void setup() {
   pinMode (LED_BUILTIN, OUTPUT);
 
   bt_message_size = 0;
+  misses = 0;
 }
 
 void loop() {
@@ -145,13 +161,29 @@ void loop() {
     } else if(incoming == '\n'){
       bt_message[bt_message_size] = '\0';
       bt_message_size = 0;
-      Serial.println(bt_message);
-      std::string random_string = get_random_string(32);
-      print_string("Random String", random_string);
-      std::string encrypeted_string = encrypt(random_string);
-      print_string("encrypeted String", encrypeted_string);
-      print_as_hex(encrypeted_string);
-      send_bt_string(encrypeted_string);
+      if (strcmp(bt_message, "Start") == 0) {
+        misses = 0;
+        random_string = get_random_string(32);
+        print_string("Random String", random_string);
+        std::string encrypeted_string = encrypt(random_string);
+        print_string("encrypeted String", encrypeted_string);
+        print_as_hex(encrypeted_string);
+        send_bt_string(encrypeted_string);
+      }
+      print_string("Received Text: ", bt_message);
+      Serial.println("#### END OF COMMUNICATION ####");
+      if((strcmp(bt_message, "Start") != 0) && (strcmp(bt_message, random_string.c_str()) != 0)) {
+        misses++;
+        Serial.println("Missed");
+        if(misses > 2) {
+          alarm();
+        }
+      } else if (strcmp(bt_message, random_string.c_str()) == 0) {
+        Serial.println("Door unlocked");
+        digitalWrite(LED_BUILTIN, HIGH);
+        delay(5000);
+        digitalWrite(LED_BUILTIN, LOW);
+      }
     }
   }
 }

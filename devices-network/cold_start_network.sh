@@ -1,6 +1,6 @@
 # Restart Fabric
 ../fabric-dev-servers/stopFabric.sh
-../fabric-dev-servers/startFabric.sh
+time ../fabric-dev-servers/startFabric.sh
 
 # Create peer admin card
 ../fabric-dev-servers/createPeerAdminCard.sh

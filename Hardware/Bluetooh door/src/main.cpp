@@ -5,6 +5,7 @@
 #define IV_SIZE     16
 #define INPUT_SIZE  256
 #define LED_BUILTIN 2
+#define BUZZER 4
 // Random Number peripheral included on ESP32
 //http://www.lucadentella.it/en/2017/02/10/esp32-10-generatore-numeri-random/
 #define DR_REG_RNG_BASE 0x3ff75144
@@ -113,17 +114,26 @@ void send_bt_string(std::string message) {
   ESP_BT.println(char_array);
 }
 
+void buzz(){
+  for(int i = 0; i < 10; i++) {
+    digitalWrite(BUZZER, LOW);
+    delay(1);
+    digitalWrite(BUZZER, HIGH);
+    delay(10);
+  }
+}
 
 void alarm() {
   Serial.println("ALARM GOES OFF");
   Serial.println("WEEEE WOOOO WEEEE WOOOOO");
   for(int i = 0; i < 10; i++) {
     digitalWrite(LED_BUILTIN, LOW);
-    delay(1000);
+    buzz();
     digitalWrite(LED_BUILTIN, HIGH);
-    delay(1000);
+    buzz();
   }
   digitalWrite(LED_BUILTIN, LOW);
+  digitalWrite(BUZZER, LOW);
 }
 
 void setup() {
@@ -139,9 +149,10 @@ void setup() {
   print_string("Decrypted String", decrypted_string);
 
   //Initializing Bluetooth
-  ESP_BT.begin("ESP32_Door_Control");
+  ESP_BT.begin("ESP32_01");
   Serial.println("Bluetooth Device is Ready to Pair");
   pinMode (LED_BUILTIN, OUTPUT);
+  pinMode (BUZZER, OUTPUT);
 
   bt_message_size = 0;
   misses = 0;
